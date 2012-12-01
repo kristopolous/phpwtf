@@ -1,0 +1,15 @@
+#!/usr/bin/php
+<?
+
+include("ganon-read-only/ganon.php");
+
+array_shift($argv);
+
+foreach($argv as $arg) {
+  $html = file_get_dom("http://www.php.net/manual-lookup.php?pattern=" . $arg . "&lang=en&scope=quickref");
+
+  $obj = $html('.methodsynopsis');
+  if(count($obj) > 0) {
+    echo $obj[0]->getPlainText(), "\n";
+  }
+}
