@@ -5,11 +5,27 @@ include("ganon-read-only/ganon.php");
 
 array_shift($argv);
 
+$cacheFile = getenv("HOME") . '/.phpwtf-cache';
+
+if(file_exists($cacheFile)) {
+  $cache = unserialize(file_get_contents($cacheFile));
+} else {
+  $cache = Array();
+}
+
 foreach($argv as $arg) {
+  if(array_key_exists($arg, $cache)) {
+    echo $cache[$arg] . "\n";
+    continue;
+  }
+
   $html = file_get_dom("http://www.php.net/manual-lookup.php?pattern=" . $arg . "&lang=en&scope=quickref");
 
   $obj = $html('.methodsynopsis');
   if(count($obj) > 0) {
     echo $obj[0]->getPlainText(), "\n";
+    $cache[$arg] = $obj[0]->getPlainText();
   }
 }
+
+file_put_contents($cacheFile, serialize($cache));
