@@ -1,31 +1,31 @@
 #!/usr/bin/php
 <?
 
-include("ganon-read-only/ganon.php");
-
 array_shift($argv);
 
 $cacheFile = getenv("HOME") . '/.phpwtf-cache';
+$cache = unserialize(file_get_contents($cacheFile));
 
-if(file_exists($cacheFile)) {
-  $cache = unserialize(file_get_contents($cacheFile));
-} else {
-  $cache = Array();
+$keySlice = array_keys($cache);
+
+foreach($argv as $searchTerm) {
+  $keySlice = ' ' . implode(' ', $keySlice) . ' ';
+  preg_match_all(
+    "/ \w*" . $searchTerm . "\w*(?= )/", 
+    $keySlice, 
+    $matchSet, 
+    PREG_SET_ORDER
+  );
+  $keySlice = array_map("array_pop", $matchSet);
 }
 
-foreach($argv as $arg) {
-  if(array_key_exists($arg, $cache)) {
-    echo $cache[$arg] . "\n";
-    continue;
-  }
+$retMax = 0;
+$nameMax = 0;
 
-  $html = file_get_dom("http://www.php.net/manual-lookup.php?pattern=" . $arg . "&lang=en&scope=quickref");
+$output = Array();
 
-  $obj = $html('.methodsynopsis');
-  if(count($obj) > 0) {
-    echo $obj[0]->getPlainText(), "\n";
-    $cache[$arg] = $obj[0]->getPlainText();
-  }
+foreach($matchSet as $key => $value) {
+  $value = explode(' ' ,$cache[trim($value[0])]);
+  printf("%-10s %s\n", array_shift($value), implode(' ', $value));
 }
 
-file_put_contents($cacheFile, serialize($cache));

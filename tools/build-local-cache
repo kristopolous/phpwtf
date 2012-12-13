@@ -1,0 +1,54 @@
+#!/usr/bin/php
+<?
+
+include("ganon-read-only/ganon.php");
+
+$cacheFile =  './.full-table';
+$lookupFile = "./.lookup-table";
+
+if(file_exists($cacheFile)) {
+  $cache = unserialize(file_get_contents($cacheFile));
+} else {
+  $cache = Array();
+}
+
+if(!file_exists($lookupFile)) {
+  echo "Lookup table not found. Building.\n";
+  $html = file_get_dom("http://us.php.net/quickref.php");
+
+  $table = Array();
+
+  foreach($html('#quickref_functions a') as $element) {
+    $table[$element->getPlainText()] = $element->href;
+  }
+
+  file_put_contents($lookupFile, serialize($table));
+}
+
+$ref = unserialize(file_get_contents($lookupFile));
+
+$total = count($ref);
+$current = 0; 
+
+foreach($ref as $name => $href) {
+  $current++;
+
+  if($current < 4750 || array_key_exists($name, $cache)) {
+    continue;
+  }
+  printf("%4d / %d %s\n", $current, $total, $name);
+
+  $html = file_get_dom("http://www.php.net/" . $href);
+
+  $obj = $html('.methodsynopsis');
+
+  if(count($obj) > 0) {
+    $value = trim($obj[0]->getPlainText());
+    $value = str_replace('( ', '(', $value);
+    $value = str_replace(' )', ')', $value);
+    $value = preg_replace('/ ,/', ',', $value);
+    $cache[$name] = $value;
+  }
+
+  file_put_contents($cacheFile, serialize($cache));
+}
