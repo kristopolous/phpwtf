@@ -1,6 +1,5 @@
 #!/usr/bin/php
 <?
-
 array_shift($argv);
 
 $cacheFile = getenv("HOME") . '/.phpwtf-cache';
@@ -19,13 +18,7 @@ foreach($argv as $searchTerm) {
   $keySlice = array_map("array_pop", $matchSet);
 }
 
-$retMax = 0;
-$nameMax = 0;
-
-$output = Array();
-
 foreach($matchSet as $key => $value) {
   $value = explode(' ' ,$cache[trim($value[0])]);
   printf("%-10s %s\n", array_shift($value), implode(' ', $value));
 }
-
