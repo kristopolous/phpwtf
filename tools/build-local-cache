@@ -10,10 +10,10 @@ if(!file_exists($manual)) {
   }
   system("gunzip $manual.gz");
 }
-system("grep -B 2 -A 2 methodparam $manual | grep -v '^--$' > $manual.compact");
+system("grep -B 4 -A 3 methodparam $manual | grep -v '^--$' > $manual.compact");
+$total = system("grep dc-description $manual.compact | wc -l");
 
-$cacheFile =  './.full-table';
-$lookupFile = "./.lookup-table";
+$cacheFile =  './full-table';
 
 if(file_exists($cacheFile)) {
   $cache = unserialize(file_get_contents($cacheFile));
@@ -22,79 +22,55 @@ if(file_exists($cacheFile)) {
 }
 
 function clean($sig) {
-  $value = $sig;
-  $value = str_replace('( ', '(', $value);
+  $value = str_replace('( ', '(', $sig);
   $value = str_replace(' )', ')', $value);
-  $value = preg_replace('/ ,/', ',', $value);
-  return $value;
+  return preg_replace('/ ,/', ',', $value);
 }
-function addFunction($raw) {
+function addFunction($raw, &$cache) {
   $html = str_get_dom($raw);
   $synopsis = $html('.dc-description');
   if(!$synopsis) {
-    echo $raw;
+    // echo "No signature: $raw";
   } else {
-    $signature = clean($html('.dc-description')[0]->getPlainText());
-    $name = $html('.methodname')[0];
-    echo $name->getPlainText() . $signature;
-    echo "\n\n";
-  }
-}
-
-if(!file_exists($lookupFile)) {
-  echo "Lookup table not found. Building (this file is quite large)\n";
-  $handle = @fopen("$manual.compact", "r");
-  if($handle) {
-    $stanza = '';
-    while (($line = fgets($handle, 4096)) !== false) {
-      $line = trim($line);
-      if($line === '') {
-        addFunction($stanza);
-        $stanza = '';
-      } else {
-        $stanza .= $line;
+    $clean = $synopsis[0]->getPlainText();
+    $signature = clean($clean);
+    $method = $html('.methodname');
+    if(!$method) {
+      // echo "No name: $raw";
+    } else {
+      $name = $method[0]->getPlainText();
+      if(!isset($cache[$name])) {
+        $cache[$name] = $signature;
       }
     }
-  } else {
-    echo "Couldn't open $manual.compact";
   }
-  exit(0);
-
-  $table = Array();
-
-  foreach($html('.methodsynopsis') as $element) {
-    echo $element->getPlainText();
-    //$table[$element->getPlainText()] = $element->href;
-  }
-
-  //file_put_contents($lookupFile, serialize($table));
 }
-exit(0);
 
-$ref = unserialize(file_get_contents($lookupFile));
+$handle = @fopen("$manual.compact", "r");
+if($handle) {
+  $stanza = '';
+  $current = 0;
+  $lc = 0;
+  while (($line = fgets($handle, 8192)) !== false) {
+    if(trim($line) === '') {
+      if($lc > 2) {
+        $current++;
+        addFunction($stanza, $cache);
+        if(0 === $current % 100) {
+          echo "$current / $total \n";
+        }
+      }
+      $lc = 0;
+      $stanza = '';
 
-$total = count($ref);
-$current = 0; 
-
-foreach($ref as $name => $href) {
-  $current++;
-
-  if($current < 4750 || array_key_exists($name, $cache)) {
-    continue;
+    } else {
+      $stanza .= $line;
+      $lc++;
+    }
   }
-  printf("%4d / %d %s\n", $current, $total, $name);
-
-  $html = file_get_dom("http://www.php.net/" . $href);
-
-  $obj = $html('.methodsynopsis');
-
-  if(count($obj) > 0) {
-    $value = trim($obj[0]->getPlainText());
-    $value = str_replace('( ', '(', $value);
-    $value = str_replace(' )', ')', $value);
-    $value = preg_replace('/ ,/', ',', $value);
-    $cache[$name] = $value;
-  }
-
-  file_put_contents($cacheFile, serialize($cache));
+} else {
+  echo "Couldn't open $manual.compact";
+  exit(-1);
 }
+
+file_put_contents($cacheFile, serialize($cache));
