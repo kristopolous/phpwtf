@@ -1,5 +1,3 @@
-# phpwtf
-
 **phpwtf** is a command line tool for quickly displaying PHP function signatures in order to eliminate the need to browse PHP's documentation website for reminders.
 
 ## Usage
