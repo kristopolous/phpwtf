@@ -2,7 +2,7 @@
 <?
 
 include("ganon-read-only/ganon.php");
-$manual = 'php_manual_en.html'
+$manual = 'php_manual_en.html';
 
 if(!file_exists($manual)) {
   if(!file_exists("$manual.gz")) {
@@ -10,7 +10,8 @@ if(!file_exists($manual)) {
   }
   system("gunzip $manual.gz");
 }
-exit(0);
+system("grep -B 2 -A 2 methodparam $manual | grep -v '^--$' > $manual.compact");
+
 $cacheFile =  './.full-table';
 $lookupFile = "./.lookup-table";
 
@@ -21,17 +22,19 @@ if(file_exists($cacheFile)) {
 }
 
 if(!file_exists($lookupFile)) {
-  echo "Lookup table not found. Building.\n";
-  $html = file_get_dom("http://us.php.net/quickref.php");
+  echo "Lookup table not found. Building (this file is quite large)\n";
+  $html = file_get_dom("$manual.compact");
 
   $table = Array();
 
-  foreach($html('#quickref_functions a') as $element) {
-    $table[$element->getPlainText()] = $element->href;
+  foreach($html('.methodsynopsis') as $element) {
+    echo $element->getPlainText();
+    //$table[$element->getPlainText()] = $element->href;
   }
 
-  file_put_contents($lookupFile, serialize($table));
+  //file_put_contents($lookupFile, serialize($table));
 }
+exit(0);
 
 $ref = unserialize(file_get_contents($lookupFile));
 
