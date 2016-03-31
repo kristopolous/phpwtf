@@ -2,7 +2,15 @@
 <?
 
 include("ganon-read-only/ganon.php");
+$manual = 'php_manual_en.html'
 
+if(!file_exists($manual)) {
+  if(!file_exists("$manual.gz")) {
+    system("wget -O $manual.gz http://us1.php.net/get/php_manual_en.html.gz/from/this/mirror");
+  }
+  system("gunzip $manual.gz");
+}
+exit(0);
 $cacheFile =  './.full-table';
 $lookupFile = "./.lookup-table";
 
