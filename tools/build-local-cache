@@ -1,8 +1,9 @@
 #!/usr/bin/php
 <?
-
 include("ganon-read-only/ganon.php");
 $manual = 'php_manual_en.html';
+$cacheFile = 'full-table';
+$cache = [];
 
 if(!file_exists($manual)) {
   if(!file_exists("$manual.gz")) {
@@ -12,16 +13,8 @@ if(!file_exists($manual)) {
 }
 system("grep -B 4 -A 3 methodparam $manual | grep -v '^--$' > $manual.compact");
 
-$cacheFile =  './full-table';
-
-if(file_exists($cacheFile)) {
-  $cache = unserialize(file_get_contents($cacheFile));
-} else {
-  $cache = Array();
-}
-
 function clean($sig) {
-  $value = str_replace('( ', '(', $sig);
+  $value = str_replace('( ', '(', trim($sig));
   $value = str_replace(' )', ')', $value);
   return preg_replace('/ ,/', ',', $value);
 }
