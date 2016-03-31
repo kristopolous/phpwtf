@@ -1,8 +1,8 @@
 # phpwtf
 
-**phpwtf** is a command line tool for quickly displaying PHP function signatures in order to eliminate the need to browse PHP's documentation website for these quick reminders.
+**phpwtf** is a command line tool for quickly displaying PHP function signatures in order to eliminate the need to browse PHP's documentation website for reminders.
 
-## Example
+## Usage
 
 Pretend I forget if the function to get a file's contents is `file_get_contents` or `get_file_contents`.  I can enter the terms as separate arguments and be reminded which one is correct:
 
