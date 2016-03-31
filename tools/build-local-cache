@@ -21,9 +21,44 @@ if(file_exists($cacheFile)) {
   $cache = Array();
 }
 
+function clean($sig) {
+  $value = $sig;
+  $value = str_replace('( ', '(', $value);
+  $value = str_replace(' )', ')', $value);
+  $value = preg_replace('/ ,/', ',', $value);
+  return $value;
+}
+function addFunction($raw) {
+  $html = str_get_dom($raw);
+  $synopsis = $html('.dc-description');
+  if(!$synopsis) {
+    echo $raw;
+  } else {
+    $signature = clean($html('.dc-description')[0]->getPlainText());
+    $name = $html('.methodname')[0];
+    echo $name->getPlainText() . $signature;
+    echo "\n\n";
+  }
+}
+
 if(!file_exists($lookupFile)) {
   echo "Lookup table not found. Building (this file is quite large)\n";
-  $html = file_get_dom("$manual.compact");
+  $handle = @fopen("$manual.compact", "r");
+  if($handle) {
+    $stanza = '';
+    while (($line = fgets($handle, 4096)) !== false) {
+      $line = trim($line);
+      if($line === '') {
+        addFunction($stanza);
+        $stanza = '';
+      } else {
+        $stanza .= $line;
+      }
+    }
+  } else {
+    echo "Couldn't open $manual.compact";
+  }
+  exit(0);
 
   $table = Array();
 
