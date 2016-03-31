@@ -11,7 +11,6 @@ if(!file_exists($manual)) {
   system("gunzip $manual.gz");
 }
 system("grep -B 4 -A 3 methodparam $manual | grep -v '^--$' > $manual.compact");
-$total = system("grep dc-description $manual.compact | wc -l");
 
 $cacheFile =  './full-table';
 
@@ -32,8 +31,7 @@ function addFunction($raw, &$cache) {
   if(!$synopsis) {
     // echo "No signature: $raw";
   } else {
-    $clean = $synopsis[0]->getPlainText();
-    $signature = clean($clean);
+    $signature = clean($synopsis[0]->getPlainText());
     $method = $html('.methodname');
     if(!$method) {
       // echo "No name: $raw";
@@ -56,8 +54,9 @@ if($handle) {
       if($lc > 2) {
         $current++;
         addFunction($stanza, $cache);
-        if(0 === $current % 100) {
-          echo "$current / $total \n";
+
+        if(0 === $current % 200) {
+          echo "$current\n";
         }
       }
       $lc = 0;
@@ -74,3 +73,4 @@ if($handle) {
 }
 
 file_put_contents($cacheFile, serialize($cache));
+system('bzip2 -c full-table > ../reference.bz2');
