@@ -25,3 +25,17 @@ Try this:
 
     $ make
 
+## How does it work?
+
+Inside the tools directory you'll find a `build-local-cache` file.  It does the following:
+
+  1. Download the latest single-file php manual from a US php mirror
+  2. Trims the file to something that is easier to parse
+  3. Intereprets each function's html one at a time as a single signature "stanza", generated from #2
+  4. Adds that to a PHP object.
+  5. Serialize that to disk.
+  6. Store as "reference.bz2" in the parent directory.
+
+> Note: An instance of the reference is provided in this repository so you don't have to run this script.  But if you want, this entire process should take under a minute of wallclock time.
+
+The installer (makefile) bunzip2s this serialized object and places it in your home directory.  Then the tool `phpwtf` (stored in $HOME/bin) queries the object to find matches and displays it at your terminal.
