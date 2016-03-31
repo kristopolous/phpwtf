@@ -2,7 +2,7 @@
 <?
 include("ganon-read-only/ganon.php");
 $manual = 'php_manual_en.html';
-$cacheFile = 'full-table';
+$cacheFile = 'reference';
 $cache = [];
 
 if(!file_exists($manual)) {
@@ -18,22 +18,21 @@ function clean($sig) {
   $value = str_replace(' )', ')', $value);
   return preg_replace('/ ,/', ',', $value);
 }
+
 function addFunction($raw, &$cache) {
   $html = str_get_dom($raw);
-  $synopsis = $html('.dc-description');
-  if(!$synopsis) {
-    // echo "No signature: $raw";
-  } else {
-    $signature = clean($synopsis[0]->getPlainText());
-    $method = $html('.methodname');
-    if(!$method) {
-      // echo "No name: $raw";
-    } else {
+
+  if($synopsis = $html('.dc-description')) {
+    if($method = $html('.methodname')) {
       $name = $method[0]->getPlainText();
       if(!isset($cache[$name])) {
-        $cache[$name] = $signature;
+        $cache[$name] = clean($synopsis[0]->getPlainText());
       }
+    } else {
+      // echo "No name: $raw";
     }
+  } else {
+    // echo "No signature: $raw";
   }
 }
 
@@ -42,6 +41,7 @@ if($handle) {
   $stanza = '';
   $current = 0;
   $lc = 0;
+
   while (($line = fgets($handle, 8192)) !== false) {
     if(trim($line) === '') {
       if($lc > 2) {
@@ -66,4 +66,4 @@ if($handle) {
 }
 
 file_put_contents($cacheFile, serialize($cache));
-system('bzip2 -c full-table > ../reference.bz2');
+system('bzip2 -c reference > ../reference.bz2');
