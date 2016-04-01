@@ -1,4 +1,4 @@
-**phpwtf** is a command line tool for quickly displaying PHP function signatures in order to eliminate the need to browse PHP's documentation website for reminders.
+**phpwtf** is a command line tool for quickly displaying PHP function signatures in order to eliminate the need to browse PHP's documentation website.
 
 ## Usage
 
@@ -7,7 +7,7 @@ Pretend I forget if the function to get a file's contents is `file_get_contents`
     $ phpwtf get file contents
     string     file_get_contents (string $filename [, bool $use_include_path = false [, resource $context [, int $offset = -1 [, int $maxlen ]]]])
 
-Similarly, I often forget how to do an `md5` in PHP.  Is it `md5sum` or `md5`?  I can do a substring match and get all the md5 related functions like this:
+Similarly, I often forget how to do an `md5` in PHP.  Is it `md5sum` or `md5`?  I can do a substring match and get all the md5 related functions:
 
     $ phpwtf md5
     string     md5 (string $str [, bool $raw_output = false ])
