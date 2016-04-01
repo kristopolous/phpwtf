@@ -11,6 +11,7 @@ if(!file_exists($manual)) {
   }
   system("gunzip $manual.gz");
 }
+echo "Making the compact file\n";
 system("grep -B 4 -A 3 methodparam $manual | grep -v '^--$' > $manual.compact");
 
 function clean($sig) {
@@ -36,6 +37,7 @@ function addFunction($raw, &$cache) {
   }
 }
 
+echo "Building the table (numbers will get to about 10k)\n";
 $handle = @fopen("$manual.compact", "r");
 if($handle) {
   $stanza = '';
@@ -65,5 +67,8 @@ if($handle) {
   exit(-1);
 }
 
+echo "Compressing the reference\n";
 file_put_contents($cacheFile, serialize($cache));
 system('bzip2 -c reference > ../reference.bz2');
+
+echo "Done.";
